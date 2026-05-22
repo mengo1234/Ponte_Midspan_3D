@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""HTML viewer v2 - molto più luminoso, con due STL FE nuove."""
+"""HTML viewer v2 - FE esatta usata anche come STL da stampare."""
 import base64, os
 
 BASE = "/var/home/fabio/Documenti/Claude/Ponte_Midspan_3D"
@@ -11,9 +11,7 @@ def b64(name):
 
 
 glb_exact_b64 = b64("local_midspan_repaired_FE_surface_100mm.glb")
-glb_print_b64 = b64("local_midspan_repaired_FE_surface_100mm_print_repaired.glb")
 stl_exact_b64 = b64("local_midspan_repaired_FE_surface_100mm.stl")
-stl_print_b64 = b64("local_midspan_repaired_FE_surface_100mm_print_repaired.stl")
 
 HTML = """<!DOCTYPE html>
 <html lang="it">
@@ -114,7 +112,7 @@ HTML = """<!DOCTYPE html>
 <body>
 <div id="header">
   <h1>Ponte Midspan <span class="accent">3D</span></h1>
-  <div class="stats">Mesh FE estratta dal file · 10 cm · 2 STL</div>
+  <div class="stats">Mesh FE esatta estratta dal file · 10 cm</div>
 </div>
 
 <div id="info">
@@ -132,12 +130,12 @@ HTML = """<!DOCTYPE html>
 
 <div id="controls">
   <button class="btn active" data-model="exact">FE esatta</button>
-  <button class="btn" data-model="print">Stampa</button>
+  <button class="btn" data-model="print">Stampa FE esatta</button>
   <button class="btn" id="rotate-btn">⟲ Ruota</button>
   <button class="btn" id="wire-btn">▦ Wireframe</button>
   <button class="btn" id="reset-btn">⟳ Reset</button>
   <button class="btn primary" data-download="exact">⬇ FE esatta</button>
-  <button class="btn primary" data-download="print">⬇ Stampa STL</button>
+  <button class="btn primary" data-download="print">⬇ Stampa FE esatta</button>
 </div>
 
 <div id="loading"><div class="spinner"></div></div>
@@ -156,6 +154,9 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
+const GLB_EXACT = "__GLB_EXACT_B64__";
+const STL_EXACT = "__STL_EXACT_B64__";
+
 const MODELS = {
   exact: {
     title: 'FE esatta',
@@ -167,21 +168,21 @@ const MODELS = {
     faces: '313.806',
     file: 'local_midspan_repaired_FE_surface_100mm.stl',
     color: 0x9aa4af,
-    glb: "__GLB_EXACT_B64__",
-    stl: "__STL_EXACT_B64__",
+    glb: GLB_EXACT,
+    stl: STL_EXACT,
   },
   print: {
-    title: 'Stampa watertight',
-    source: 'FE esatta riparata per slicer',
-    status: 'watertight · 1 componente · 0 bordi aperti',
+    title: 'Stampa FE esatta',
+    source: 'stesso identico STL della FE esatta',
+    status: 'nessun remesh · geometria FE conservata',
     width: '100 mm',
-    length: '65,5 mm',
-    height: '47,5 mm',
-    faces: '116.528',
-    file: 'local_midspan_repaired_FE_surface_100mm_print_repaired.stl',
+    length: '65,6 mm',
+    height: '48,3 mm',
+    faces: '313.806',
+    file: 'local_midspan_repaired_FE_surface_100mm.stl',
     color: 0xa6b4c2,
-    glb: "__GLB_PRINT_B64__",
-    stl: "__STL_PRINT_B64__",
+    glb: GLB_EXACT,
+    stl: STL_EXACT,
   }
 };
 
@@ -448,9 +449,7 @@ window.addEventListener('resize', () => {
 
 html = (
     HTML.replace("__GLB_EXACT_B64__", glb_exact_b64)
-    .replace("__GLB_PRINT_B64__", glb_print_b64)
     .replace("__STL_EXACT_B64__", stl_exact_b64)
-    .replace("__STL_PRINT_B64__", stl_print_b64)
 )
 out = "/var/home/fabio/Documenti/Claude/Ponte_Midspan_3D/Ponte_Midspan_VIEWER.html"
 with open(out, "w") as f:
