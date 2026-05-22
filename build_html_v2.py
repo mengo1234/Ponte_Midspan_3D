@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""HTML viewer v2 - FE esatta e versione leggermente pulita."""
+"""HTML viewer v2 - FE esatta, leggermente pulita e senza barre interne."""
 import base64, os
 
-BASE = "/var/home/fabio/Documenti/Claude/Ponte_Midspan_3D"
+BASE = "/home/fabio/Documenti/Claude/Ponte_Midspan_3D_publish"
 
 
 def b64(name):
@@ -10,10 +10,12 @@ def b64(name):
         return base64.b64encode(f.read()).decode()
 
 
-glb_exact_b64 = b64("local_midspan_repaired_FE_surface_160mm.glb")
-stl_exact_b64 = b64("local_midspan_repaired_FE_surface_160mm.stl")
-glb_clean_b64 = b64("local_midspan_repaired_FE_surface_160mm_min_clean.glb")
-stl_clean_b64 = b64("local_midspan_repaired_FE_surface_160mm_min_clean.stl")
+glb_exact_b64  = b64("local_midspan_repaired_FE_surface_160mm.glb")
+stl_exact_b64  = b64("local_midspan_repaired_FE_surface_160mm.stl")
+glb_clean_b64  = b64("local_midspan_repaired_FE_surface_160mm_min_clean.glb")
+stl_clean_b64  = b64("local_midspan_repaired_FE_surface_160mm_min_clean.stl")
+# "senza barre": GLB compresso Draco (leggero) -> embedded; STL servito come file
+glb_nobars_b64 = b64("local_midspan_repaired_FE_surface_160mm_nobars.glb")
 
 HTML = """<!DOCTYPE html>
 <html lang="it">
@@ -131,13 +133,15 @@ HTML = """<!DOCTYPE html>
 <div id="viewer"></div>
 
 <div id="controls">
-  <button class="btn active" data-model="exact">FE esatta</button>
+  <button class="btn" data-model="exact">FE esatta</button>
   <button class="btn" data-model="clean">Leggermente pulito</button>
+  <button class="btn active" data-model="nobars">Senza barre</button>
   <button class="btn" id="rotate-btn">⟲ Ruota</button>
   <button class="btn" id="wire-btn">▦ Wireframe</button>
   <button class="btn" id="reset-btn">⟳ Reset</button>
   <button class="btn primary" data-download="exact">⬇ FE esatta</button>
   <button class="btn primary" data-download="clean">⬇ Pulito STL</button>
+  <button class="btn primary" data-download="nobars">⬇ Senza barre</button>
 </div>
 
 <div id="loading"><div class="spinner"></div></div>
@@ -154,12 +158,14 @@ HTML = """<!DOCTYPE html>
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-const GLB_EXACT = "__GLB_EXACT_B64__";
-const STL_EXACT = "__STL_EXACT_B64__";
-const GLB_CLEAN = "__GLB_CLEAN_B64__";
-const STL_CLEAN = "__STL_CLEAN_B64__";
+const GLB_EXACT  = "__GLB_EXACT_B64__";
+const STL_EXACT  = "__STL_EXACT_B64__";
+const GLB_CLEAN  = "__GLB_CLEAN_B64__";
+const STL_CLEAN  = "__STL_CLEAN_B64__";
+const GLB_NOBARS = "__GLB_NOBARS_B64__";
 
 const MODELS = {
   exact: {
@@ -187,6 +193,19 @@ const MODELS = {
     color: 0xa6b4c2,
     glb: GLB_CLEAN,
     stl: STL_CLEAN,
+  },
+  nobars: {
+    title: 'Senza barre interne',
+    source: 'Telaio interno tra i pilastri e piastra bulloni rimossi',
+    status: '1 componente · 0 bordi aperti · 0 non-manifold',
+    width: '160 mm',
+    length: '104,9 mm',
+    height: '77,1 mm',
+    faces: '197.788',
+    file: 'local_midspan_repaired_FE_surface_160mm_nobars.stl',
+    color: 0xa6b4c2,
+    glb: GLB_NOBARS,
+    stlUrl: 'local_midspan_repaired_FE_surface_160mm_nobars.stl',
   }
 };
 
@@ -291,9 +310,15 @@ function b64ToArrayBuffer(b64) {
 }
 
 const loader = new GLTFLoader();
+// Draco decoder: necessario per il modello "Senza barre" (GLB compresso).
+// I GLB non compressi continuano a caricarsi normalmente.
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/');
+loader.setDRACOLoader(dracoLoader);
+
 let resetCamera = null;
 let currentRoot = null;
-let activeModel = 'exact';
+let activeModel = 'nobars';
 
 function setLoading(visible) {
   const loading = document.getElementById('loading');
@@ -385,7 +410,7 @@ function loadModel(key) {
     resetCamera();
 
     setTimeout(() => setLoading(false), 200);
-  }, undefined, (err) => {
+  }, (err) => {
     console.error('GLB load error', err);
     document.getElementById('loading').innerHTML = '<div style="color:#c0392b">Errore caricamento modello</div>';
   });
@@ -416,13 +441,19 @@ document.getElementById('reset-btn').addEventListener('click', () => {
 
 function downloadModel(key) {
   const model = MODELS[key];
-  const buf = b64ToArrayBuffer(model.stl);
-  const blob = new Blob([buf], { type: 'model/stl' });
-  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = model.file;
+  a.download = model.file;
+  if (model.stlUrl) {
+    // STL servito come file separato (niente base64 nel HTML)
+    a.href = model.stlUrl;
+  } else {
+    const buf = b64ToArrayBuffer(model.stl);
+    const blob = new Blob([buf], { type: 'model/stl' });
+    a.href = URL.createObjectURL(blob);
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }
   document.body.appendChild(a); a.click();
-  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+  setTimeout(() => document.body.removeChild(a), 100);
 }
 
 document.querySelectorAll('[data-download]').forEach(btn => {
@@ -456,8 +487,10 @@ html = (
     .replace("__STL_EXACT_B64__", stl_exact_b64)
     .replace("__GLB_CLEAN_B64__", glb_clean_b64)
     .replace("__STL_CLEAN_B64__", stl_clean_b64)
+    .replace("__GLB_NOBARS_B64__", glb_nobars_b64)
 )
-out = "/var/home/fabio/Documenti/Claude/Ponte_Midspan_3D/Ponte_Midspan_VIEWER.html"
-with open(out, "w") as f:
-    f.write(html)
-print(f"HTML: {out} ({os.path.getsize(out)/1024/1024:.2f} MB)")
+for fname in ("index.html", "Ponte_Midspan_VIEWER.html"):
+    out = os.path.join(BASE, fname)
+    with open(out, "w") as f:
+        f.write(html)
+    print(f"HTML: {out} ({os.path.getsize(out)/1024/1024:.2f} MB)")
