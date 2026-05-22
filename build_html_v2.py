@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""HTML viewer v2 - FE esatta usata anche come STL da stampare."""
+"""HTML viewer v2 - FE esatta e versione leggermente pulita."""
 import base64, os
 
 BASE = "/var/home/fabio/Documenti/Claude/Ponte_Midspan_3D"
@@ -12,6 +12,8 @@ def b64(name):
 
 glb_exact_b64 = b64("local_midspan_repaired_FE_surface_100mm.glb")
 stl_exact_b64 = b64("local_midspan_repaired_FE_surface_100mm.stl")
+glb_clean_b64 = b64("local_midspan_repaired_FE_surface_100mm_min_clean.glb")
+stl_clean_b64 = b64("local_midspan_repaired_FE_surface_100mm_min_clean.stl")
 
 HTML = """<!DOCTYPE html>
 <html lang="it">
@@ -112,7 +114,7 @@ HTML = """<!DOCTYPE html>
 <body>
 <div id="header">
   <h1>Ponte Midspan <span class="accent">3D</span></h1>
-  <div class="stats">Mesh FE esatta estratta dal file · 10 cm</div>
+  <div class="stats">Mesh FE estratta dal file · FE esatta + pulizia minima</div>
 </div>
 
 <div id="info">
@@ -130,12 +132,12 @@ HTML = """<!DOCTYPE html>
 
 <div id="controls">
   <button class="btn active" data-model="exact">FE esatta</button>
-  <button class="btn" data-model="print">Stampa FE esatta</button>
+  <button class="btn" data-model="clean">Leggermente pulito</button>
   <button class="btn" id="rotate-btn">⟲ Ruota</button>
   <button class="btn" id="wire-btn">▦ Wireframe</button>
   <button class="btn" id="reset-btn">⟳ Reset</button>
   <button class="btn primary" data-download="exact">⬇ FE esatta</button>
-  <button class="btn primary" data-download="print">⬇ Stampa FE esatta</button>
+  <button class="btn primary" data-download="clean">⬇ Pulito STL</button>
 </div>
 
 <div id="loading"><div class="spinner"></div></div>
@@ -156,6 +158,8 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 const GLB_EXACT = "__GLB_EXACT_B64__";
 const STL_EXACT = "__STL_EXACT_B64__";
+const GLB_CLEAN = "__GLB_CLEAN_B64__";
+const STL_CLEAN = "__STL_CLEAN_B64__";
 
 const MODELS = {
   exact: {
@@ -171,18 +175,18 @@ const MODELS = {
     glb: GLB_EXACT,
     stl: STL_EXACT,
   },
-  print: {
-    title: 'Stampa FE esatta',
-    source: 'stesso identico STL della FE esatta',
-    status: 'nessun remesh · geometria FE conservata',
+  clean: {
+    title: 'Leggermente pulito',
+    source: 'FE esatta, rimossi solo micro-frammenti staccati',
+    status: '1 componente · 0 bordi aperti · 66 non-manifold',
     width: '100 mm',
     length: '65,6 mm',
     height: '48,3 mm',
-    faces: '313.806',
-    file: 'local_midspan_repaired_FE_surface_100mm.stl',
+    faces: '313.740',
+    file: 'local_midspan_repaired_FE_surface_100mm_min_clean.stl',
     color: 0xa6b4c2,
-    glb: GLB_EXACT,
-    stl: STL_EXACT,
+    glb: GLB_CLEAN,
+    stl: STL_CLEAN,
   }
 };
 
@@ -343,7 +347,7 @@ function loadModel(key) {
     root.position.y -= center.y;
     root.position.z -= box.min.z;
 
-const concreteMat = new THREE.MeshLambertMaterial({
+    const concreteMat = new THREE.MeshLambertMaterial({
       color: model.color,
       side: THREE.DoubleSide,
       wireframe: wireframeOn,
@@ -450,6 +454,8 @@ window.addEventListener('resize', () => {
 html = (
     HTML.replace("__GLB_EXACT_B64__", glb_exact_b64)
     .replace("__STL_EXACT_B64__", stl_exact_b64)
+    .replace("__GLB_CLEAN_B64__", glb_clean_b64)
+    .replace("__STL_CLEAN_B64__", stl_clean_b64)
 )
 out = "/var/home/fabio/Documenti/Claude/Ponte_Midspan_3D/Ponte_Midspan_VIEWER.html"
 with open(out, "w") as f:
