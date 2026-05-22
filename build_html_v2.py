@@ -10,10 +10,10 @@ def b64(name):
         return base64.b64encode(f.read()).decode()
 
 
-glb_exact_b64 = b64("local_midspan_repaired_FE_surface_100mm.glb")
-stl_exact_b64 = b64("local_midspan_repaired_FE_surface_100mm.stl")
-glb_clean_b64 = b64("local_midspan_repaired_FE_surface_100mm_min_clean.glb")
-stl_clean_b64 = b64("local_midspan_repaired_FE_surface_100mm_min_clean.stl")
+glb_exact_b64 = b64("local_midspan_repaired_FE_surface_160mm.glb")
+stl_exact_b64 = b64("local_midspan_repaired_FE_surface_160mm.stl")
+glb_clean_b64 = b64("local_midspan_repaired_FE_surface_160mm_min_clean.glb")
+stl_clean_b64 = b64("local_midspan_repaired_FE_surface_160mm_min_clean.stl")
 
 HTML = """<!DOCTYPE html>
 <html lang="it">
@@ -114,15 +114,15 @@ HTML = """<!DOCTYPE html>
 <body>
 <div id="header">
   <h1>Ponte Midspan <span class="accent">3D</span></h1>
-  <div class="stats">Mesh FE estratta dal file · FE esatta + pulizia minima</div>
+  <div class="stats">Mesh FE estratta dal file · scala 1,6 · larghezza 16 cm</div>
 </div>
 
 <div id="info">
   <div><b id="model-title">FE esatta</b></div>
   <div><span class="label">Origine:</span> <span id="model-source">blocchi _NODE/_ELEM del file</span></div>
-  <div><span class="label">Larghezza:</span> <span id="model-width">100 mm</span></div>
-  <div><span class="label">Lunghezza:</span> <span id="model-length">65,6 mm</span></div>
-  <div><span class="label">Altezza:</span> <span id="model-height">48,3 mm</span></div>
+  <div><span class="label">Larghezza:</span> <span id="model-width">160 mm</span></div>
+  <div><span class="label">Lunghezza:</span> <span id="model-length">104,9 mm</span></div>
+  <div><span class="label">Altezza:</span> <span id="model-height">77,3 mm</span></div>
   <div><span class="label">Stato:</span> <span id="model-status">mesh FE non remeshata</span></div>
   <div><span class="label">Facce:</span> <span id="model-faces">313.806</span></div>
   <div style="margin-top:8px; font-size:11px; color:#7a8aa5;">Trascina = ruota · Scroll = zoom · Tasto destro = pan</div>
@@ -166,11 +166,11 @@ const MODELS = {
     title: 'FE esatta',
     source: 'blocchi _NODE/_ELEM del file',
     status: 'non watertight · mesh non remeshata',
-    width: '100 mm',
-    length: '65,6 mm',
-    height: '48,3 mm',
+    width: '160 mm',
+    length: '104,9 mm',
+    height: '77,3 mm',
     faces: '313.806',
-    file: 'local_midspan_repaired_FE_surface_100mm.stl',
+    file: 'local_midspan_repaired_FE_surface_160mm.stl',
     color: 0x9aa4af,
     glb: GLB_EXACT,
     stl: STL_EXACT,
@@ -179,11 +179,11 @@ const MODELS = {
     title: 'Leggermente pulito',
     source: 'FE esatta, rimossi solo micro-frammenti staccati',
     status: '1 componente · 0 bordi aperti · 66 non-manifold',
-    width: '100 mm',
-    length: '65,6 mm',
-    height: '48,3 mm',
+    width: '160 mm',
+    length: '104,9 mm',
+    height: '77,3 mm',
     faces: '313.740',
-    file: 'local_midspan_repaired_FE_surface_100mm_min_clean.stl',
+    file: 'local_midspan_repaired_FE_surface_160mm_min_clean.stl',
     color: 0xa6b4c2,
     glb: GLB_CLEAN,
     stl: STL_CLEAN,
