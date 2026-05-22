@@ -25,7 +25,7 @@ HTML = """<!DOCTYPE html>
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: linear-gradient(180deg, #cfe0f3 0%, #e8f0fa 60%, #f5f8fc 100%);
+    background: linear-gradient(180deg, #9fb9d8 0%, #c4d5e8 58%, #e5edf7 100%);
     color: #1a2541;
     overflow: hidden; height: 100vh;
   }
@@ -166,7 +166,7 @@ const MODELS = {
     height: '48,3 mm',
     faces: '313.806',
     file: 'local_midspan_repaired_FE_surface_100mm.stl',
-    color: 0xf5f0e6,
+    color: 0x9aa4af,
     glb: "__GLB_EXACT_B64__",
     stl: "__STL_EXACT_B64__",
   },
@@ -179,7 +179,7 @@ const MODELS = {
     height: '47,5 mm',
     faces: '116.528',
     file: 'local_midspan_repaired_FE_surface_100mm_print_repaired.stl',
-    color: 0xf0eadf,
+    color: 0xa6b4c2,
     glb: "__GLB_PRINT_B64__",
     stl: "__STL_PRINT_B64__",
   }
@@ -192,9 +192,9 @@ const canvasBg = document.createElement('canvas');
 canvasBg.width = 2; canvasBg.height = 256;
 const ctx = canvasBg.getContext('2d');
 const grad = ctx.createLinearGradient(0, 0, 0, 256);
-grad.addColorStop(0, '#7eb1e8');
-grad.addColorStop(0.55, '#c7ddf2');
-grad.addColorStop(1, '#e8f0fa');
+grad.addColorStop(0, '#6f99c5');
+grad.addColorStop(0.55, '#aac2dc');
+grad.addColorStop(1, '#dce7f2');
 ctx.fillStyle = grad;
 ctx.fillRect(0, 0, 2, 256);
 const bgTex = new THREE.CanvasTexture(canvasBg);
@@ -213,7 +213,7 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.8;
+renderer.toneMappingExposure = 1.05;
 document.getElementById('viewer').appendChild(renderer.domElement);
 
 // PMREM env for nice reflections + ambient
@@ -221,15 +221,15 @@ const pmrem = new THREE.PMREMGenerator(renderer);
 const envScene = new RoomEnvironment();
 scene.environment = pmrem.fromScene(envScene, 0.04).texture;
 
-// === LIGHTS (molto forti) ===
-const hemi = new THREE.HemisphereLight(0xffffff, 0xc4d4e6, 2.0);
+// === LIGHTS ===
+const hemi = new THREE.HemisphereLight(0xffffff, 0x7088a4, 1.0);
 hemi.position.set(0, 0, 50);
 scene.add(hemi);
 
-const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+const ambient = new THREE.AmbientLight(0xffffff, 0.25);
 scene.add(ambient);
 
-const sun = new THREE.DirectionalLight(0xfff4d6, 5.0);
+const sun = new THREE.DirectionalLight(0xfff4d6, 2.0);
 sun.position.set(25, -18, 40);
 sun.castShadow = true;
 sun.shadow.mapSize.width = 2048;
@@ -243,15 +243,15 @@ sun.shadow.camera.bottom = -30;
 sun.shadow.bias = -0.0005;
 scene.add(sun);
 
-const fill = new THREE.DirectionalLight(0xc0d8f0, 2.2);
+const fill = new THREE.DirectionalLight(0xc0d8f0, 0.9);
 fill.position.set(-15, 25, 12);
 scene.add(fill);
 
-const rim = new THREE.DirectionalLight(0xffe4b3, 1.5);
+const rim = new THREE.DirectionalLight(0xffe4b3, 0.8);
 rim.position.set(-20, -15, 8);
 scene.add(rim);
 
-const bottomFill = new THREE.DirectionalLight(0xe8f0ff, 0.8);
+const bottomFill = new THREE.DirectionalLight(0xe8f0ff, 0.25);
 bottomFill.position.set(0, 0, -5);
 scene.add(bottomFill);
 
@@ -342,10 +342,16 @@ function loadModel(key) {
     root.position.y -= center.y;
     root.position.z -= box.min.z;
 
-    const concreteMat = new THREE.MeshLambertMaterial({
+const concreteMat = new THREE.MeshLambertMaterial({
       color: model.color,
       side: THREE.DoubleSide,
       wireframe: wireframeOn,
+    });
+    const edgeMat = new THREE.LineBasicMaterial({
+      color: 0x1f2d44,
+      transparent: true,
+      opacity: 0.42,
+      depthTest: true,
     });
 
     root.traverse(o => {
@@ -354,6 +360,10 @@ function loadModel(key) {
         o.material = concreteMat;
         o.castShadow = true;
         o.receiveShadow = true;
+        const edges = new THREE.EdgesGeometry(o.geometry, 18);
+        const edgeLines = new THREE.LineSegments(edges, edgeMat.clone());
+        edgeLines.renderOrder = 2;
+        o.add(edgeLines);
       }
     });
 
