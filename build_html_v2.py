@@ -201,7 +201,7 @@ const MODELS = {
     width: '160 mm',
     length: '104,9 mm',
     height: '77,1 mm',
-    faces: '149.938',
+    faces: '149.265',
     file: 'local_midspan_repaired_FE_surface_160mm_nobars.stl',
     color: 0xa6b4c2,
     glb: GLB_NOBARS,
